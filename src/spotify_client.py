@@ -1,16 +1,23 @@
+import os
 import spotipy
+from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 
-# expects secrets.py in the same folder defining client_id and client_secret
-from secrets import CLIENT_ID, CLIENT_SECRET
 from spotipy.exceptions import SpotifyException
 
 def build_client() -> spotipy.Spotify:
     """Create an authenticated Spotify client."""
+    load_dotenv()
+    client_id = os.environ.get("SPOTIFY_CLIENT_ID")
+    client_secret = os.environ.get("SPOTIFY_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        raise RuntimeError(
+            "Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables."
+        )
     return spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
-            client_id=CLIENT_ID,
-            client_secret=CLIENT_SECRET,
+            client_id=client_id,
+            client_secret=client_secret,
         )
     )
 

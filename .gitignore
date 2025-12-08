@@ -12,9 +12,23 @@ __pycache__/
 *.pyzwzw
 *.pyzwzwz
 
+# cursor
+.cursorignore
+
+# pypi
+.pypi*
+.pypirc
+
 # secrets
 *secrets.py
+.env
 .cache
+
+# build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
 
 # downloads
 downloads/

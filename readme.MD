@@ -2,12 +2,14 @@ Spotify playlist/track downloader CLI. It looks up tracks on YouTube (via `yt-dl
 
 ## Setup
 - Python 3.9+ recommended.
-- Install system deps: `pip install -r requirements.txt`.
-- Put Spotify API creds in `src/spotify_secrets.py`:
-  ```python
-  CLIENT_ID = "your_spotify_client_id"
-  CLIENT_SECRET = "your_spotify_client_secret"
-  ```
+- Install deps: `pip install -r requirements.txt` (or via package install below).
+- Provide Spotify API creds:
+  - Create a `.env` file in the project (kept out of git):
+    ```
+    SPOTIFY_CLIENT_ID=your_spotify_client_id
+    SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+    ```
+  - Or set them in your shell profile so they’re always available.
 - Install the CLI (from repo root):
   - Editable: `python -m pip install -e .`
   - Regular: `python -m pip install .`
