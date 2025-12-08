@@ -1,41 +1,46 @@
-Spotify playlist downloader CLI that searches each track on YouTube via `yt-dlp`, downloads audio, and can optionally write the track list to a text file.
+Spotify playlist/track downloader CLI. It looks up tracks on YouTube (via `yt-dlp`) and downloads audio.
 
 ## Setup
 - Python 3.9+ recommended.
-- Install `yt-dlp` on your PATH: `pip install yt-dlp` (inside your venv).
-- Install Python deps: `pip install -r requirements.txt`.
-- Create `secrets.py` in the repo root with your Spotify app credentials:
+- Install system deps: `pip install -r requirements.txt`.
+- Put Spotify API creds in `src/spotify_secrets.py`:
   ```python
-  client_id = "your_spotify_client_id"
-  client_secret = "your_spotify_client_secret"
+  CLIENT_ID = "your_spotify_client_id"
+  CLIENT_SECRET = "your_spotify_client_secret"
   ```
+- Install the CLI (from repo root):
+  - Editable: `python -m pip install -e .`
+  - Regular: `python -m pip install .`
+  This exposes the `spotify-dl` command on your PATH.
 
 ## Usage
-Run from the project root:
+CLI entry point (works from any directory after install):
 ```
-python song_from_playlist.py <playlist_url_or_id> [options]
+spotify-dl <playlist_url_or_id> [options]
+spotify-dl --track <track_url_or_id> [options]
 ```
 
 Options:
-- `-f, --audio-format` (default `mp3`): audio format passed to `yt-dlp`.
+- `-f, --audio-format` (default `mp3`): audio format for `yt-dlp`.
 - `-o, --output` (default `downloads`): directory where files are saved.
 - `-t, --threads` (default `4`): max concurrent downloads.
-- `-s, --save` (optional): path to write track names (one per line).
 
 Examples:
 ```
-# Basic download
-python song_from_playlist.py https://open.spotify.com/playlist/your_id
+# Download a Spotify playlist
+spotify-dl https://open.spotify.com/playlist/your_id
 
-# Custom format/output and limited concurrency
-python song_from_playlist.py https://open.spotify.com/playlist/your_id \
-  -f m4a -o downloads -t 6
+# Download a single Spotify track
+spotify-dl --track https://open.spotify.com/track/your_id
 
-# Save track list to a file
-python song_from_playlist.py https://open.spotify.com/playlist/your_id \
-  --save tracks.txt
+# SoundCloud playlist or track
+spotify-dl https://soundcloud.com/playlist-url
+spotify-dl --track https://soundcloud.com/track-url
+
+# Custom format/output and concurrency
+spotify-dl https://open.spotify.com/playlist/your_id -f m4a -o downloads -t 6
 ```
 
 Notes:
-- Downloads use the template `<output>/<title>.<ext>` as resolved by `yt-dlp`.
-- The script searches YouTube (`ytsearch:`) using track artist/name from Spotify.
+- Output template: `<output>/<title>.<ext>` as resolved by `yt-dlp`.
+- Spotify lookups search YouTube via `ytsearch:<artist> <title>`.
