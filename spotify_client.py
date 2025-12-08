@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # expects secrets.py in the same folder defining client_id and client_secret
 from secrets import CLIENT_ID, CLIENT_SECRET
+from spotipy.exceptions import SpotifyException
 
 def build_client() -> spotipy.Spotify:
     """Create an authenticated Spotify client."""
@@ -26,7 +27,7 @@ def fetch_tracks(sp_client: spotipy.Spotify, playlist: str):
             if not name:
                 continue
             artists = ", ".join(artist["name"] for artist in track.get("artists", []))
-            tracks.append((artists, name))
+            tracks.append((artists, name, None))
         if results.get("next"):
             results = sp_client.next(results)
         else:
@@ -37,7 +38,12 @@ def fetch_tracks(sp_client: spotipy.Spotify, playlist: str):
 
 def fetch_track(sp_client: spotipy.Spotify, track_id: str):
     """Return list with a single (artists, name) tuple for a track."""
-    track = sp_client.track(track_id) or {}
+    try:
+        track = sp_client.track(track_id) or {}
+    except SpotifyException as exc:
+        # Gracefully handle missing/invalid track IDs
+        print(f"Failed to fetch track {track_id}: {exc}")
+        return []
     name = track.get("name")
     if not name:
         return []

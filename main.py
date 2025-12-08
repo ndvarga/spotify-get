@@ -74,7 +74,8 @@ def main():
             source = "spotify"
         elif "soundcloud" in args.playlist:
             urls = soundcloud_entries(args.playlist)
-            tracks = [("SoundCloud", url) for url in urls]
+            titles = [get_soundcloud_title(url) for url in urls]
+            tracks = [("SoundCloud", title, url) for title, url in zip(titles, urls)]
             source = "soundcloud"
         else:
             parser.error("invalid playlist URL/ID")
@@ -86,18 +87,18 @@ def main():
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_template = str(output_dir / "%(title)s.%(ext)s")
-    print(f"\nOUTPUT TEMPLATE: {output_template}\n")
 
     max_workers = max(1, args.threads)
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        for artists, name in tracks:
+        for artists, name, url in tracks:
             pool.submit(
                 download_song,
+                source,
                 args.audio_format,
                 output_template,
                 artists,
                 name,
-                None,
+                url if source == "soundcloud" else None,
             )
 
 
