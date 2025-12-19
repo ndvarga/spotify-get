@@ -3,23 +3,25 @@ Spotify playlist/track downloader CLI. It looks up tracks on YouTube (via `yt-dl
 ## Setup
 - Python 3.9+ recommended.
 - Install deps: `pip install -r requirements.txt` (or via package install below).
-- Provide Spotify API creds:
-  - Create a `.env` file in the project (kept out of git):
+- Provide Spotify API creds (choose one):
+  - **Option 1**: Create a `.env` file in your home directory (`~/.env` or `C:\Users\YourName\.env`):
     ```
     SPOTIFY_CLIENT_ID=your_spotify_client_id
     SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
     ```
-  - Or set them in your shell profile so they’re always available.
+    This works globally after package installation.
+  - **Option 2**: Create a `.env` file in the project directory (for development).
+  - **Option 3**: Set them as environment variables in your shell profile.
 - Install the CLI (from repo root):
   - Editable: `python -m pip install -e .`
   - Regular: `python -m pip install .`
-  This exposes the `spotify-dl` command on your PATH.
+  This exposes the `spotify-get` command on your PATH.
 
 ## Usage
 CLI entry point (works from any directory after install):
 ```
-spotify-dl <playlist_url_or_id> [options]
-spotify-dl --track <track_url_or_id> [options]
+spotify-get <playlist_url_or_id> [options]
+spotify-get --track <track_url_or_id> [options]
 ```
 
 Options:
@@ -30,17 +32,17 @@ Options:
 Examples:
 ```
 # Download a Spotify playlist
-spotify-dl https://open.spotify.com/playlist/your_id
+spotify-get https://open.spotify.com/playlist/your_id
 
 # Download a single Spotify track
-spotify-dl --track https://open.spotify.com/track/your_id
+spotify-get --track https://open.spotify.com/track/your_id
 
 # SoundCloud playlist or track
-spotify-dl https://soundcloud.com/playlist-url
-spotify-dl --track https://soundcloud.com/track-url
+spotify-get https://soundcloud.com/playlist-url
+spotify-get --track https://soundcloud.com/track-url
 
 # Custom format/output and concurrency
-spotify-dl https://open.spotify.com/playlist/your_id -f m4a -o downloads -t 6
+spotify-get https://open.spotify.com/playlist/your_id -f m4a -o downloads -t 6
 ```
 
 Notes:

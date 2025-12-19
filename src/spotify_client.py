@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import spotipy
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -7,12 +8,18 @@ from spotipy.exceptions import SpotifyException
 
 def build_client() -> spotipy.Spotify:
     """Create an authenticated Spotify client."""
-    load_dotenv()
+    # Try loading .env from current directory, then home directory
+    load_dotenv()  # Current directory
+    load_dotenv(Path.home() / ".env")  # Home directory
     client_id = os.environ.get("SPOTIFY_CLIENT_ID")
     client_secret = os.environ.get("SPOTIFY_CLIENT_SECRET")
     if not client_id or not client_secret:
         raise RuntimeError(
-            "Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables."
+            "Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables.\n"
+            "You can either:\n"
+            "  1. Set them as environment variables in your shell\n"
+            "  2. Create a .env file in your home directory (~/.env) or current directory\n"
+            "     with: SPOTIFY_CLIENT_ID=... and SPOTIFY_CLIENT_SECRET=..."
         )
     return spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
