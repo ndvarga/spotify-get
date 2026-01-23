@@ -32,3 +32,9 @@ build/
 
 # downloads
 downloads/
+
+# text files
+*.txt
+*.json
+*.csv
+*.xml

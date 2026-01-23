@@ -46,7 +46,18 @@ def main():
     )
     parser.add_argument(
         "--cookies",
-        help="Path to cookies file (Netscape format). Use --cookies-from-browser for better reliability with YouTube.",
+        help="Path to cookies file (Netscape format). Export using 'Get Cookies.txt LOCALLY' browser extension. Use --cookies-from-browser for automatic extraction.",
+    )
+    parser.add_argument(
+        "--list-formats",
+        action="store_true",
+        help="List available formats for debugging instead of downloading.",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose/debug output for yt-dlp and other operations.",
     )
     args = parser.parse_args()
 
@@ -65,13 +76,13 @@ def main():
             tracks = fetch_track(sp_client, track_id)
             source = "spotify"
             output_template = f"{args.output}/%(title)s.%(ext)s"
-            download_song("spotify", args.audio_format, output_template, artists=tracks[0][0], name=tracks[0][1], cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
+            download_song("spotify", args.audio_format, output_template, artists=tracks[0][0], name=tracks[0][1], cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies, list_formats=args.list_formats, verbose=args.verbose)
             return
         elif "soundcloud" in args.track:
             # direct download; no track list to process
             title = get_soundcloud_title(args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
             output_template = f"{args.output}/{title}.{ext}"
-            download_song("soundcloud", args.audio_format, output_template, url=args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
+            download_song("soundcloud", args.audio_format, output_template, url=args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies, list_formats=args.list_formats, verbose=args.verbose)
             return
 
     if args.playlist:
@@ -109,6 +120,8 @@ def main():
                 url if source == "soundcloud" else None,
                 args.cookies_from_browser,
                 args.cookies,
+                args.list_formats,
+                args.verbose,
             )
 
 
