@@ -1,8 +1,15 @@
 import json, subprocess
 
-def soundcloud_entries(playlist_url: str):
+def soundcloud_entries(playlist_url: str, cookies_from_browser: str = None, cookies_file: str = None):
+    cmd = ["yt-dlp", "-J", "--flat-playlist"]
+    if cookies_from_browser:
+        cmd.extend(["--cookies-from-browser", cookies_from_browser])
+    elif cookies_file:
+        cmd.extend(["--cookies", cookies_file])
+    cmd.append(playlist_url)
+    
     proc = subprocess.run(
-        ["yt-dlp", "-J", "--flat-playlist", playlist_url],
+        cmd,
         capture_output=True,
         text=True,
         check=True,
@@ -17,17 +24,26 @@ def soundcloud_entries(playlist_url: str):
     return urls
 
 
-def get_soundcloud_title(url: str) -> str:
+def get_soundcloud_title(url: str, cookies_from_browser: str = None, cookies_file: str = None) -> str:
   """
   Get the title of a SoundCloud track.
 
   Args:
     url: The URL of the SoundCloud track.
+    cookies_from_browser: Browser to extract cookies from (e.g., chrome, firefox, edge).
+    cookies_file: Path to cookies file (Netscape format).
   Returns:
     The title of the SoundCloud track.
   """
+  cmd = ["yt-dlp", "-J", "--no-playlist"]
+  if cookies_from_browser:
+      cmd.extend(["--cookies-from-browser", cookies_from_browser])
+  elif cookies_file:
+      cmd.extend(["--cookies", cookies_file])
+  cmd.append(url)
+  
   proc = subprocess.run(
-      ["yt-dlp", "-J", "--no-playlist", url],
+      cmd,
       capture_output=True,
       text=True,
       check=True,

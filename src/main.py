@@ -40,6 +40,14 @@ def main():
         default=4,
         help="Maximum number of concurrent downloads (default: 4)",
     )
+    parser.add_argument(
+        "--cookies-from-browser",
+        help="Browser to extract cookies from (e.g., chrome, firefox, edge, safari). More reliable than --cookies for YouTube.",
+    )
+    parser.add_argument(
+        "--cookies",
+        help="Path to cookies file (Netscape format). Use --cookies-from-browser for better reliability with YouTube.",
+    )
     args = parser.parse_args()
 
     if not args.playlist and not args.track:
@@ -57,13 +65,13 @@ def main():
             tracks = fetch_track(sp_client, track_id)
             source = "spotify"
             output_template = f"{args.output}/%(title)s.%(ext)s"
-            download_song("spotify", args.audio_format, output_template, artists=tracks[0][0], name=tracks[0][1])
+            download_song("spotify", args.audio_format, output_template, artists=tracks[0][0], name=tracks[0][1], cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
             return
         elif "soundcloud" in args.track:
             # direct download; no track list to process
-            title = get_soundcloud_title(args.track)
+            title = get_soundcloud_title(args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
             output_template = f"{args.output}/{title}.{ext}"
-            download_song("soundcloud", args.audio_format, output_template, url=args.track)
+            download_song("soundcloud", args.audio_format, output_template, url=args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
             return
 
     if args.playlist:
@@ -73,8 +81,8 @@ def main():
             tracks = fetch_tracks(sp_client, playlist_id)
             source = "spotify"
         elif "soundcloud" in args.playlist:
-            urls = soundcloud_entries(args.playlist)
-            titles = [get_soundcloud_title(url) for url in urls]
+            urls = soundcloud_entries(args.playlist, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
+            titles = [get_soundcloud_title(url, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies) for url in urls]
             tracks = [("SoundCloud", title, url) for title, url in zip(titles, urls)]
             source = "soundcloud"
         else:
@@ -99,6 +107,8 @@ def main():
                 artists,
                 name,
                 url if source == "soundcloud" else None,
+                args.cookies_from_browser,
+                args.cookies,
             )
 
 
