@@ -3,7 +3,14 @@ import subprocess
 import os
 import shutil
 
-def download_song(source: str, audio_format: str, output_template: str, artists: str = None, name: str = None, url:str = None, cookies_from_browser: str = None, cookies_file: str = None, list_formats: bool = False, verbose: bool = False):
+def _youtube_extractor_args(yt_player_client: str, yt_po_token: str = None) -> str:
+  args = [f"player-client={yt_player_client}"]
+  if yt_po_token:
+    args.append(f"po_token={yt_po_token}")
+  return "youtube:" + ";".join(args)
+
+
+def download_song(source: str, audio_format: str, output_template: str, artists: str = None, name: str = None, url:str = None, cookies_from_browser: str = None, cookies_file: str = None, list_formats: bool = False, verbose: bool = False, yt_player_client: str = "default,tv,ios", yt_po_token: str = None, _auto_retry_stage: int = 0):
   """
   Download a song from YouTube or SoundCloud using yt-dlp.
   
@@ -47,6 +54,8 @@ def download_song(source: str, audio_format: str, output_template: str, artists:
     
     if source == "spotify":
       cmd_parts.extend(['--remote-components', 'ejs:github'])
+      # Extractor args to decide which extractor to use
+      cmd_parts.extend(['--extractor-args', _youtube_extractor_args(yt_player_client, yt_po_token)])
       deno_path = shutil.which('deno')
       if not deno_path:
         winget_deno_path = os.path.expanduser(
@@ -131,6 +140,7 @@ def download_song(source: str, audio_format: str, output_template: str, artists:
       
       if source == "spotify":
         cmd_parts.extend(['--remote-components', 'ejs:github'])
+        cmd_parts.extend(['--extractor-args', _youtube_extractor_args(yt_player_client, yt_po_token)])
         deno_path = shutil.which('deno')
         if not deno_path:
           winget_deno_path = os.path.expanduser(
@@ -207,12 +217,49 @@ def download_song(source: str, audio_format: str, output_template: str, artists:
   format_error = "Requested format is not available" in error_output or "Only images are available" in error_output
   sabr_error = "SABR streaming" in error_output or "challenge solving failed" in error_output
   ejs_error = "challenge solving failed" in error_output or "JavaScript runtime" in error_output or "EJS" in error_output
+  missing_pot_error = "po token" in error_output.lower() or "missing_pot" in error_output.lower() or "gvs po token" in error_output.lower()
   
   # Note: DPAPI errors will be visible in the output above
   # We'll provide helpful messages based on return code and common patterns
   
   # If download failed, provide helpful error messages
   if result_code != 0:
+    if source == "spotify" and missing_pot_error and not yt_po_token:
+      if _auto_retry_stage == 0 and yt_player_client != "default,tv,ios":
+        print("\nDetected missing PO token. Auto-retrying with --yt-player-client default,tv,ios ...")
+        return download_song(
+          source,
+          audio_format,
+          output_template,
+          artists,
+          name,
+          url,
+          cookies_from_browser,
+          cookies_file,
+          list_formats,
+          verbose,
+          "default,tv,ios",
+          yt_po_token,
+          1,
+        )
+      if _auto_retry_stage <= 1 and yt_player_client != "default,mweb":
+        print("\nDetected missing PO token. Auto-retrying with --yt-player-client default,mweb ...")
+        return download_song(
+          source,
+          audio_format,
+          output_template,
+          artists,
+          name,
+          url,
+          cookies_from_browser,
+          cookies_file,
+          list_formats,
+          verbose,
+          "default,mweb",
+          yt_po_token,
+          2,
+        )
+
     if source == "spotify":
       if cookies_from_browser:
         browser_lower = cookies_from_browser.lower()
@@ -240,6 +287,13 @@ def download_song(source: str, audio_format: str, output_template: str, artists:
             print("   pip install --upgrade yt-dlp")
             print("2. Try a different search result (the video might have format issues)")
             print("3. The format selection has been improved in the code")
+          elif missing_pot_error:
+            print("ERROR: YouTube requires PO Token for web/mweb formats (yt-dlp issue #12482)")
+            print("\nSOLUTIONS:")
+            print("1. Keep using non-web clients (default,tv,ios) - set with --yt-player-client")
+            print("2. Provide PO token with --yt-po-token, e.g. mweb.gvs+TOKEN")
+            print("3. If using mweb, set: --yt-player-client default,mweb")
+            print("4. Read: https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide")
           else:
             print("Download failed even with cookies. Try these solutions:")
             print("1. Close your browser completely before running the command")
@@ -298,6 +352,13 @@ def download_song(source: str, audio_format: str, output_template: str, artists:
           print("   pip install --upgrade yt-dlp")
           print("2. Try a different search result (the video might have format issues)")
           print("3. The player client has been changed to 'android' to avoid SABR issues")
+        elif missing_pot_error:
+          print("ERROR: YouTube requires PO Token for web/mweb formats (yt-dlp issue #12482)")
+          print("\nSOLUTIONS:")
+          print("1. Keep using non-web clients (default,tv,ios) - set with --yt-player-client")
+          print("2. Provide PO token with --yt-po-token, e.g. mweb.gvs+TOKEN")
+          print("3. If using mweb, set: --yt-player-client default,mweb")
+          print("4. Read: https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide")
         else:
           print("Download failed. The cookies file might be expired or invalid.")
           print("\nTROUBLESHOOTING:")

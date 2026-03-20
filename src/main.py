@@ -54,6 +54,15 @@ def main():
         help="List available formats for debugging instead of downloading.",
     )
     parser.add_argument(
+        "--yt-player-client",
+        default="default,tv,ios",
+        help="YouTube player clients for yt-dlp extractor args (default: default,tv,ios).",
+    )
+    parser.add_argument(
+        "--yt-po-token",
+        help="Optional YouTube PO token (e.g., mweb.gvs+TOKEN) for formats requiring GVS PO token.",
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
@@ -72,24 +81,32 @@ def main():
     if args.track:
         if "spotify.com" in args.track or args.track.startswith("spotify:track"):
             track_id = args.track.split("/")[-1].split("?")[0]
-            sp_client = sp_client or build_client()
-            tracks = fetch_track(sp_client, track_id)
+            try:
+                sp_client = sp_client or build_client()
+                tracks = fetch_track(sp_client, track_id)
+            except RuntimeError as exc:
+                print(exc)
+                return
             source = "spotify"
             output_template = f"{args.output}/%(title)s.%(ext)s"
-            download_song("spotify", args.audio_format, output_template, artists=tracks[0][0], name=tracks[0][1], cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies, list_formats=args.list_formats, verbose=args.verbose)
+            download_song("spotify", args.audio_format, output_template, artists=tracks[0][0], name=tracks[0][1], cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies, list_formats=args.list_formats, verbose=args.verbose, yt_player_client=args.yt_player_client, yt_po_token=args.yt_po_token)
             return
         elif "soundcloud" in args.track:
             # direct download; no track list to process
             title = get_soundcloud_title(args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
             output_template = f"{args.output}/{title}.{ext}"
-            download_song("soundcloud", args.audio_format, output_template, url=args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies, list_formats=args.list_formats, verbose=args.verbose)
+            download_song("soundcloud", args.audio_format, output_template, url=args.track, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies, list_formats=args.list_formats, verbose=args.verbose, yt_player_client=args.yt_player_client, yt_po_token=args.yt_po_token)
             return
 
     if args.playlist:
         if "spotify.com" in args.playlist or args.playlist.startswith("spotify:playlist"):
             playlist_id = args.playlist.split("/")[-1].split("?")[0]
-            sp_client = sp_client or build_client()
-            tracks = fetch_tracks(sp_client, playlist_id)
+            try:
+                sp_client = sp_client or build_client()
+                tracks = fetch_tracks(sp_client, playlist_id)
+            except RuntimeError as exc:
+                print(exc)
+                return
             source = "spotify"
         elif "soundcloud" in args.playlist:
             urls = soundcloud_entries(args.playlist, cookies_from_browser=args.cookies_from_browser, cookies_file=args.cookies)
@@ -122,6 +139,8 @@ def main():
                 args.cookies,
                 args.list_formats,
                 args.verbose,
+                args.yt_player_client,
+                args.yt_po_token,
             )
 
 
