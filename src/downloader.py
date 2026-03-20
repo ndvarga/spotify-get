@@ -10,7 +10,19 @@ def _youtube_extractor_args(yt_player_client: str, yt_po_token: str = None) -> s
   return "youtube:" + ";".join(args)
 
 
-def download_song(source: str, audio_format: str, output_template: str, artists: str = None, name: str = None, url:str = None, cookies_from_browser: str = None, cookies_file: str = None, list_formats: bool = False, verbose: bool = False, yt_player_client: str = "default,tv,ios", yt_po_token: str = None, _auto_retry_stage: int = 0):
+def download_song(source: str, 
+                  audio_format: str, 
+                  output_template: str, 
+                  artists: str = None, 
+                  name: str = None, 
+                  url:str = None, 
+                  cookies_from_browser: str = None, 
+                  cookies_file: str = None, 
+                  list_formats: bool = False, 
+                  verbose: bool = False, 
+                  yt_player_client: str = "default,tv,ios", 
+                  yt_po_token: str = None, 
+                  _auto_retry_stage: int = 0):
   """
   Download a song from YouTube or SoundCloud using yt-dlp.
   
@@ -23,6 +35,10 @@ def download_song(source: str, audio_format: str, output_template: str, artists:
     url: The URL of the song.
     cookies_from_browser: Browser to extract cookies from (e.g., chrome, firefox, edge).
     cookies_file: Path to cookies file (Netscape format).
+    list_formats: if true, will list formats for debugging (default false)
+    verbose: Turn on verbose mode (default false)
+    yt_player_client: a list of clients to use for downloading from YouTube.
+    yt_po_token: Use if YouTube PO token needed
   """
   if source == "spotify":
     query = f"ytsearch:{artists} {name}"
